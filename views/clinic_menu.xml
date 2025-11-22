@@ -6,119 +6,90 @@
         <menuitem id="menu_clinic_management_root" 
                   name="Clinic Management" 
                   sequence="10" 
-                  web_icon="clinic_management,static/description/icon.png"/>
-       
-        <!-- Patient Care Menu -->
-        <menuitem id="menu_clinic_patient_care" 
-                  name="Patient Care" 
-                  parent="menu_clinic_management_root" 
-                  sequence="10"/>
+                  />
+
 
         <menuitem id="menu_clinic_patient" 
                   name="Patients" 
-                  parent="menu_clinic_patient_care" 
+                  parent="menu_clinic_management_root"
                   action="action_clinic_patient" 
                   sequence="10"/>
 
         <menuitem id="menu_clinic_vital_signs" 
                   name="Vital Signs" 
-                  parent="menu_clinic_patient_care" 
+                  parent="menu_clinic_management_root"
                   action="action_clinic_vital_signs" 
                   sequence="20"/>
 
-<!--        <menuitem id="menu_clinic_prescription" -->
-<!--                  name="Prescriptions" -->
-<!--                  parent="menu_clinic_patient_care" -->
-<!--                  action="action_clinic_prescription" -->
-<!--                  sequence="30"/>-->
 
         <menuitem id="menu_clinic_lab_result" 
                   name="Lab Results" 
-                  parent="menu_clinic_patient_care"
+                  parent="menu_clinic_management_root"
                   action="action_clinic_lab_result" 
                   sequence="40"/>
 
-<!--        &lt;!&ndash; Medication Management Menu &ndash;&gt;-->
-<!--        <menuitem id="menu_clinic_medication_management" -->
-<!--                  name="Medication Management" -->
-<!--                  parent="menu_clinic_management_root" -->
-<!--                  sequence="20"/>-->
 
-<!--        <menuitem id="menu_clinic_medication" -->
-<!--                  name="Medications" -->
-<!--                  parent="menu_clinic_medication_management" -->
-<!--                  action="action_clinic_medication" -->
-<!--                  sequence="10"/>-->
+        <menuitem id="menu_medical_prescription"
+                  name="Prescriptions"
+                  parent="menu_clinic_management_root"
+                  action="action_medical_prescription"/>
 
-<!--        <menuitem id="menu_clinic_medication_category" -->
-<!--                  name="Medication Categories" -->
-<!--                  parent="menu_clinic_medication_management" -->
-<!--                  action="action_clinic_medication_category" -->
-<!--                  sequence="20"/>-->
 
-        <!-- Reports Menu -->
-        <menuitem id="menu_clinic_reports" 
-                  name="Reports" 
-                  parent="menu_clinic_management_root" 
-                  sequence="30"/>
-
-        <!-- Configuration Menu -->
-        <menuitem id="menu_clinic_configuration" 
-                  name="Configuration" 
-                  parent="menu_clinic_management_root" 
-                  sequence="40" 
-                  />
-
-        <!-- Quick Actions -->
-        <record id="action_clinic_patient_quick" model="ir.actions.act_window">
-            <field name="name">New Patient</field>
+        <!-- Patient Action -->
+        <record id="action_clinic_patient" model="ir.actions.act_window">
+            <field name="name">Patients</field>
             <field name="res_model">clinic.patient</field>
-            <field name="view_mode">form</field>
-            <field name="target">new</field>
+            <field name="view_mode">kanban,list,form</field>
+            <field name="context">{'search_default_active_patients': 1}</field>
+            <field name="help" type="html">
+                <p class="o_view_nocontent_smiling_face">
+                    Create your first patient record
+                </p>
+                <p>
+                    Start by registering patients with their personal information,
+                    contact details, and medical history. You can then record vital signs
+                    and create prescriptions for comprehensive patient care.
+                </p>
+            </field>
         </record>
 
-        <record id="action_clinic_vital_signs_quick" model="ir.actions.act_window">
-            <field name="name">Record Vital Signs</field>
+
+        <!-- Vital Signs Action -->
+        <record id="action_clinic_vital_signs" model="ir.actions.act_window">
+            <field name="name">Vital Signs</field>
             <field name="res_model">clinic.vital.signs</field>
-            <field name="view_mode">form</field>
-            <field name="target">new</field>
+            <field name="view_mode">list,form</field>
+            <field name="help" type="html">
+                <p class="o_view_nocontent_smiling_face">
+                    Record your first vital signs
+                </p>
+                <p>
+                    Start recording patient vital signs including blood pressure,
+                    heart rate, temperature, respiratory rate, and body measurements.
+                    The system will automatically calculate BMI and flag abnormal values.
+                </p>
+            </field>
         </record>
 
-        <!-- Optional: list View for Treatments (if needed elsewhere) -->
-    <record id="medical_treatment_list" model="ir.ui.view">
-        <field name="name">medical.treatment.list</field>
-        <field name="model">medical.treatment</field>
-        <field name="arch" type="xml">
-            <list>
-                <field name="name"/>
-                <field name="usage_ar"/>
-            </list>
-        </field>
-    </record>
 
-    <!-- Form View for Treatments (used when creating new from lines) -->
-    <record id="medical_treatment_form" model="ir.ui.view">
-        <field name="name">medical.treatment.form</field>
-        <field name="model">medical.treatment</field>
-        <field name="arch" type="xml">
-            <form>
-                <sheet>
-                    <group>
-                        <field name="name"/>
-                        <field name="usage_ar"/>
-                    </group>
-                </sheet>
-            </form>
-        </field>
-    </record>
+        <!-- Lab result Action -->
+        <record id="action_clinic_lab_result" model="ir.actions.act_window">
+            <field name="name">Lab Results</field>
+            <field name="res_model">clinic.lab.result</field>
+            <field name="view_mode">list,form</field>
+            <field name="help" type="html">
+                <p class="o_view_nocontent_smiling_face">
+                    save your  patients Lab Results
+                </p>
+            </field>
+        </record>
 
-<!--        <record id="action_clinic_prescription_quick" model="ir.actions.act_window">-->
-<!--            <field name="name">New Prescription</field>-->
-<!--            <field name="res_model">clinic.prescription</field>-->
-<!--            <field name="view_mode">form</field>-->
-<!--            <field name="target">new</field>-->
-<!--        </record>-->
-
+        <!--    prescription action  -->
+        <record id="action_medical_prescription" model="ir.actions.act_window">
+            <field name="name">Prescriptions</field>
+            <field name="res_model">medical.prescription</field>
+            <field name="view_mode">list,form</field>
+        </record>
     </data>
 </odoo>
 

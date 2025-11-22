@@ -1,9 +1,7 @@
 id,name,model_id:id,group_id:id,perm_read,perm_write,perm_create,perm_unlink
 access_all_clinic_patient,access_all_clinic_patient,model_clinic_patient,,1,1,1,1
 access_all_clinic_vital_signs,access_all_clinic_vital_signs,model_clinic_vital_signs,,1,1,1,1
-access_all_clinic_vital_signs_reference,access_all_clinic_vital_signs_reference,model_clinic_vital_signs_reference,,1,1,1,1
 access_all_medical_treatment,access_all_medical_treatment,model_medical_treatment,,1,1,1,1
-access_all_clinic_medication_category,access_all_clinic_medication_category,model_clinic_medication_category,,1,1,1,1
 access_all_medical_treatment,access_all_medical_treatment,model_medical_treatment,,1,1,1,1
 access_all_medical_prescription,access_all_medical_prescription,model_medical_prescription,,1,1,1,1
 access_all_medical_prescription_line,access_all_medical_prescription_line,model_medical_prescription_line,,1,1,1,1

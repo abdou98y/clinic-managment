@@ -64,58 +64,16 @@ class ClinicPatient(models.Model):
         help="Patient's occupation for occupational health considerations"
     )
     
-    # Emergency Contact Information
-    emergency_contact_name = fields.Char(
-        string='Emergency Contact Name',
-        tracking=True
-    )
-    emergency_contact_phone = fields.Char(
-        string='Emergency Contact Phone',
-        tracking=True
-    )
-    emergency_contact_relationship = fields.Char(
-        string='Relationship to Patient'
-    )
 
     # Contact Information Fields
     phone = fields.Char(
         string='Phone Number',
         tracking=True
     )
-    mobile = fields.Char(
-        string='Mobile Number',
-        tracking=True
-    )
-    email = fields.Char(
-        string='Email Address',
-        tracking=True
-    )
-    street = fields.Char(string='Street Address')
-    street2 = fields.Char(string='Street Address 2')
-    city = fields.Char(string='City')
-    state_id = fields.Many2one(
-        'res.country.state',
-        string='State/Province'
-    )
-    zip = fields.Char(string='ZIP/Postal Code')
-    country_id = fields.Many2one(
-        'res.country',
-        string='Country',
-        default=lambda self: self.env.company.country_id
-    )
 
-    # Medical History Fields
-    blood_group = fields.Selection([
-        ('a_positive', 'A+'),
-        ('a_negative', 'A-'),
-        ('b_positive', 'B+'),
-        ('b_negative', 'B-'),
-        ('ab_positive', 'AB+'),
-        ('ab_negative', 'AB-'),
-        ('o_positive', 'O+'),
-        ('o_negative', 'O-')
-    ], string='Blood Group', tracking=True)
-    
+    city = fields.Char(string='City')
+
+
     allergies = fields.Text(
         string='Known Allergies',
         tracking=True,
@@ -157,16 +115,7 @@ class ClinicPatient(models.Model):
         string='General Notes',
         help="Additional notes and observations"
     )
-    image = fields.Binary(
-        string='Patient Photo',
-        help="Patient photograph for identification"
-    )
-    company_id = fields.Many2one(
-        'res.company',
-        string='Company',
-        default=lambda self: self.env.company,
-        required=True
-    )
+
 
     # Relationship Fields
     vital_signs_ids = fields.One2many(
@@ -174,11 +123,7 @@ class ClinicPatient(models.Model):
         'patient_id',
         string='Vital Signs Records'
     )
-    # prescription_ids = fields.One2many(
-    #     'clinic.prescription',
-    #     'patient_id',
-    #     string='Prescriptions'
-    # )
+
     prescription_ids = fields.One2many('medical.prescription', 'patient_id', string="Prescriptions")    # Computed Fields
 
 
@@ -283,16 +228,6 @@ class ClinicPatient(models.Model):
         for record in self:
             if record.phone and not phone_pattern.match(record.phone):
                 raise ValidationError(_('Invalid phone number format.'))
-            if record.mobile and not phone_pattern.match(record.mobile):
-                raise ValidationError(_('Invalid mobile number format.'))
-
-    # @api.constrains('email')
-    # def _check_email_format(self):
-    #     """Validate email format."""
-    #     email_pattern = re.compile(r'^[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Za-z]{2,}$')
-    #     for record in self:
-    #         if record.email and not email_pattern.match(record.email):
-    #             raise ValidationError(_('Invalid email format.'))
 
     def name_get(self):
         """Custom name display including patient ID."""
@@ -341,7 +276,7 @@ class ClinicPatient(models.Model):
         return {
             'name': _('Prescriptions'),
             'type': 'ir.actions.act_window',
-            'res_model': 'clinic.prescription',
+            'res_model': 'medical.prescription',
             'view_mode': 'list,form',
             'domain': [('patient_id', '=', self.id)],
             'context': {'default_patient_id': self.id},
@@ -366,56 +301,11 @@ class ClinicPatient(models.Model):
         return {
             'name': _('Create Prescription'),
             'type': 'ir.actions.act_window',
-            'res_model': 'clinic.prescription',
+            'res_model': 'medical.prescription',
             'view_mode': 'form',
             'context': {'default_patient_id': self.id},
             'target': 'new',
         }
-
-    # def get_latest_vital_signs(self):
-    #     """Get the most recent vital signs record for the patient."""
-    #     self.ensure_one()
-    #     return self.vital_signs_ids.sorted('visit_datetime', reverse=True)[:1]
-
-    # def get_active_prescriptions(self):
-    #     """Get active prescriptions for the patient."""
-    #     self.ensure_one()
-    #     return self.prescription_ids.filtered(
-    #         lambda p: p.state in ['confirmed', 'dispensed'] and
-    #         p.prescription_date >= fields.Datetime.now() - fields.Datetime.timedelta(days=90)
-    #     )
-
-    # def check_drug_allergies(self, medication_id):
-    #     """Check if patient has allergies to the specified medication."""
-    #     self.ensure_one()
-    #     if not self.allergies or not medication_id:
-    #         return False
-    #
-    #     medication = self.env['clinic.medication'].browse(medication_id)
-    #     allergy_text = self.allergies.lower()
-    #
-    #     # Check against medication name and common allergy terms
-    #     medication_terms = [
-    #         medication.name.lower(),
-    #         medication.generic_name.lower() if medication.generic_name else '',
-    #         medication.drug_class.lower() if medication.drug_class else ''
-    #     ]
-    #
-    #     for term in medication_terms:
-    #         if term and term in allergy_text:
-    #             return True
-    #
-    #     return False
-
-    # @api.model
-    # def get_patients_needing_followup(self):
-    #     """Get patients who need follow-up based on last visit date."""
-    #     cutoff_date = fields.Datetime.now() - fields.Datetime.timedelta(days=90)
-    #     return self.search([
-    #         ('active', '=', True),
-    #         ('last_visit_date', '<', cutoff_date),
-    #         ('chronic_conditions', '!=', False)
-    #     ])
 
     def archive_patient(self):
         """Archive patient record with confirmation."""

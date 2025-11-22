@@ -11,7 +11,6 @@
                         <field name="date"/>
                         <field name="test_name"/>
                         <field name="result_file"  widget="pdf_viewer" filename="result_filename"/>
-<!--                        <field name="result_image" widget="image" class="oe_avatar"/>-->
                         <field name="notes"/>
                     </group>
                 </sheet>
@@ -30,17 +29,4 @@
             </list>
         </field>
     </record>
-
-    <!-- Lab result Action -->
-    <record id="action_clinic_lab_result" model="ir.actions.act_window">
-        <field name="name">Lab Results</field>
-        <field name="res_model">clinic.lab.result</field>
-        <field name="view_mode">list,form</field>
-        <field name="help" type="html">
-            <p class="o_view_nocontent_smiling_face">
-                save your  patients Lab Results
-            </p>
-        </field>
-    </record>
-
 </odoo>

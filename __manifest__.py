@@ -21,9 +21,9 @@ Key Features:
 This module provides healthcare facilities with a complete solution for managing
 patient care workflows from registration through diagnosis and treatment.
     """,
-    'author': 'Manus AI',
-    'website': 'https://github.com/manus-ai/clinic-management',
-    'license': 'LGPL-3',
+    'author': 'Abdelrhman younes',
+    'website': 'https://github.com/abdou98y/clinic-managment',
+    'license': '',
     'depends': [
         'base',
         'mail',
@@ -32,39 +32,21 @@ patient care workflows from registration through diagnosis and treatment.
     ],
     'data': [
         # Security
-        # 'security/clinic_security.xml',
         'security/ir.model.access.csv',
-        # 'views/patient_assets.xml',
-
         # Reports
-        # 'report/clinic_prescription_report.xml',
         'report/clinic_patient_report.xml',
         'report/report_medical_prescription.xml',
         'report/report_medical_prescription_action.xml',
-
         # Data
         'data/clinic_sequence.xml',
-        # 'data/clinic_medication_data.xml',
-        # 'data/clinic_vital_signs_reference.xml',
-
         # Views
         'views/clinic_patient_views.xml',
         'views/clinic_vital_signs_views.xml',
-        # 'views/clinic_medication_views.xml',
-        # 'views/clinic_prescription_views.xml',
         'views/lap_result.xml',
         'views/clinic_menu.xml',
         'views/patient_complaint.xml',
         'views/prescription.xml',
-
-
-
-
         # Wizards
-        # 'wizard/clinic_prescription_wizard_views.xml',
-    ],
-    'demo': [
-        'data/clinic_demo.xml',
     ],
     'assets': {
         'web.assets_backend': [
@@ -78,14 +60,11 @@ patient care workflows from registration through diagnosis and treatment.
                 'clinic_management/static/src/scss/fonts.scss',
             ],
     },
-    'images': ['static/description/banner.png'],
     'installable': True,
     'application': True,
     'auto_install': False,
     'external_dependencies': {
         'python': ['reportlab', 'qrcode'],
     },
-    'post_init_hook': 'post_init_hook',
-    'uninstall_hook': 'uninstall_hook',
 }
 

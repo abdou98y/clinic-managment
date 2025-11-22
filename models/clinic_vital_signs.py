@@ -3,7 +3,8 @@
 from odoo import models, fields, api, _
 from odoo.exceptions import ValidationError
 from datetime import datetime, timedelta
-
+import logging
+_logger = logging.getLogger(__name__)
 
 class ClinicVitalSigns(models.Model):
     _name = 'clinic.vital.signs'
@@ -85,7 +86,7 @@ class ClinicVitalSigns(models.Model):
         ('axillary', 'Axillary'),
         ('tympanic', 'Tympanic'),
         ('temporal', 'Temporal')
-    ], string='Temperature Method', default='oral')
+    ], string='Temperature Method', default='axillary')
     temperature_fahrenheit = fields.Float(
         string='Temperature (°F)',
         compute='_compute_temperature_fahrenheit',
@@ -160,83 +161,8 @@ class ClinicVitalSigns(models.Model):
         help="Waist measurement for metabolic assessment"
     )
 
-    # Clinical Assessment
-    pain_scale = fields.Selection([
-        ('0', '0 - No Pain'),
-        ('1', '1 - Minimal'),
-        ('2', '2 - Mild'),
-        ('3', '3 - Uncomfortable'),
-        ('4', '4 - Moderate'),
-        ('5', '5 - Distracting'),
-        ('6', '6 - Distressing'),
-        ('7', '7 - Unmanageable'),
-        ('8', '8 - Intense'),
-        ('9', '9 - Severe'),
-        ('10', '10 - Unable to Move')
-    ], string='Pain Scale (0-10)')
-
-    consciousness_level = fields.Selection([
-        ('alert', 'Alert'),
-        ('drowsy', 'Drowsy'),
-        ('confused', 'Confused'),
-        ('unconscious', 'Unconscious')
-    ], string='Consciousness Level', default='alert')
-
-    mobility_status = fields.Selection([
-        ('independent', 'Independent'),
-        ('assisted', 'Assisted'),
-        ('wheelchair', 'Wheelchair'),
-        ('bedbound', 'Bedbound')
-    ], string='Mobility Status', default='independent')
-
-    skin_condition = fields.Selection([
-        ('normal', 'Normal'),
-        ('dry', 'Dry'),
-        ('moist', 'Moist'),
-        ('diaphoretic', 'Diaphoretic'),
-        ('cyanotic', 'Cyanotic'),
-        ('jaundiced', 'Jaundiced'),
-        ('pale', 'Pale')
-    ], string='Skin Condition', default='normal')
-
-    # Clinical Notes
-    chief_complaint = fields.Text(
-        string='Chief Complaint',
-        help="Primary reason for visit"
-    )
-    history_present_illness = fields.Text(
-        string='History of Present Illness',
-        help="Current illness history and symptoms"
-    )
-    physical_examination = fields.Text(
-        string='Physical Examination',
-        help="Physical examination findings"
-    )
-    diagnosis = fields.Text(
-        string='Diagnosis/Assessment',
-        help="Clinical diagnosis or impression"
-    )
-    assessment_plan = fields.Text(
-        string='Assessment & Plan',
-        help="Clinical assessment and treatment plan"
-    )
-    doctor_remarks = fields.Text(
-        string='Doctor Remarks',
-        help="Additional physician notes and observations"
-    )
-    follow_up_instructions = fields.Text(
-        string='Follow-up Instructions',
-        help="Patient follow-up and care instructions"
-    )
-
-    # System Fields
+    # # System Fields
     active = fields.Boolean(string='Active', default=True)
-    company_id = fields.Many2one(
-        'res.company',
-        string='Company',
-        default=lambda self: self.env.company,
-        required=True
-    )
 
     # Display Fields
     display_name = fields.Char(
@@ -249,25 +175,22 @@ class ClinicVitalSigns(models.Model):
         "main.complaint",
         string="Main Complaint",
         ondelete="restrict",
-        required=True,
-        default=lambda self: self.env['main.complaint'].search([], order="id desc", limit=1).id
-    )
-
-    display_main_complaint = fields.Char(
-        string="Main Complaint Display",
-        compute='_compute_display_main_complaint'
+        required=False,
+        # default=lambda self: self._get_default_main_complaint_id(),
     )
 
 
-    @api.depends('main_complaint_id', 'visit_datetime', 'chief_complaint')
-    def _compute_display_main_complaint(self):
-        for rec in self:
-            if rec.main_complaint_id:
-                rec.display_main_complaint = rec.main_complaint_id.name_get()[0][1]
-            else:
-                date_str = (rec.visit_datetime or fields.Datetime.now()).strftime('%Y-%m-%d')
-                desc = rec.chief_complaint or ''
-                rec.display_main_complaint = f"{date_str} - {desc[:50]}" if desc else date_str
+    # def _get_default_main_complaint_id(self):
+    #     patient_id = self.env.context.get("default_patient_id")
+    #     if not patient_id:
+    #         patient_id = self.patient_id.id
+    #
+    #     last_complaint = self.env['main.complaint'].search(
+    #         [('patient_id', '=', patient_id)],
+    #         order="id desc",
+    #         limit=1
+    #     )
+    #     return last_complaint.id if last_complaint else False
 
     @api.depends('patient_id', 'visit_datetime')
     def _compute_display_name(self):
@@ -417,87 +340,13 @@ class ClinicVitalSigns(models.Model):
         if not self.oxygen_support:
             self.oxygen_flow_rate = 0
 
-    def get_vital_signs_summary(self):
-        """Get a summary of vital signs for reports."""
-        self.ensure_one()
-        summary = []
-        
-        if self.blood_pressure_display:
-            summary.append(f"BP: {self.blood_pressure_display} mmHg")
-        if self.heart_rate:
-            summary.append(f"HR: {self.heart_rate} bpm")
-        if self.temperature:
-            summary.append(f"Temp: {self.temperature}°C")
-        if self.respiratory_rate:
-            summary.append(f"RR: {self.respiratory_rate}/min")
-        if self.oxygen_saturation:
-            summary.append(f"SpO₂: {self.oxygen_saturation}%")
-        if self.weight:
-            summary.append(f"Weight: {self.weight} kg")
-        if self.bmi:
-            summary.append(f"BMI: {self.bmi}")
-        
-        return " | ".join(summary)
-
-    def get_abnormal_values(self):
-        """Identify abnormal vital signs values."""
-        self.ensure_one()
-        abnormal = []
-        
-        # Check blood pressure
-        if self.bp_category in ['stage1', 'stage2', 'crisis']:
-            abnormal.append(f"Blood Pressure: {self.blood_pressure_display} ({dict(self._fields['bp_category'].selection)[self.bp_category]})")
-        
-        # Check heart rate
-        if self.heart_rate:
-            if self.heart_rate < 60:
-                abnormal.append(f"Heart Rate: {self.heart_rate} bpm (Bradycardia)")
-            elif self.heart_rate > 100:
-                abnormal.append(f"Heart Rate: {self.heart_rate} bpm (Tachycardia)")
-        
-        # Check temperature
-        if self.temperature:
-            if self.temperature > 37.5:
-                abnormal.append(f"Temperature: {self.temperature}°C (Fever)")
-            elif self.temperature < 36.0:
-                abnormal.append(f"Temperature: {self.temperature}°C (Hypothermia)")
-        
-        # Check oxygen saturation
-        if self.oxygen_saturation and self.oxygen_saturation < 95.0:
-            abnormal.append(f"SpO₂: {self.oxygen_saturation}% (Low)")
-        
-        # Check BMI
-        if self.bmi_category in ['underweight', 'obese_class1', 'obese_class2', 'obese_class3']:
-            abnormal.append(f"BMI: {self.bmi} ({dict(self._fields['bmi_category'].selection)[self.bmi_category]})")
-        
-        return abnormal
-
-    @api.model
-    def get_patients_with_abnormal_vitals(self, days=7):
-        """Get patients with abnormal vital signs in the last N days."""
-        cutoff_date = fields.Datetime.now() - timedelta(days=days)
-        
-        # Find records with abnormal values
-        abnormal_records = self.search([
-            ('visit_datetime', '>=', cutoff_date),
-            '|', '|', '|', '|',
-            ('bp_category', 'in', ['stage1', 'stage2', 'crisis']),
-            ('temperature', '>', 37.5),
-            ('temperature', '<', 36.0),
-            ('oxygen_saturation', '<', 95.0),
-            ('heart_rate', '<', 60),
-            ('heart_rate', '>', 100)
-        ])
-        
-        return abnormal_records.mapped('patient_id')
-
     def action_create_prescription(self):
         """Create prescription based on this vital signs record."""
         self.ensure_one()
         return {
             'name': _('Create Prescription'),
             'type': 'ir.actions.act_window',
-            'res_model': 'clinic.prescription',
+            'res_model': 'medical.prescription',
             'view_mode': 'form',
             'context': {
                 'default_patient_id': self.patient_id.id,
@@ -506,22 +355,3 @@ class ClinicVitalSigns(models.Model):
             'target': 'new',
         }
 
-    @api.model
-    def create(self, vals):
-        rec = super().create(vals)
-        if rec.patient_id:
-            rec.patient_id._on_related_changed()
-        return rec
-
-    def write(self, vals):
-        res = super().write(vals)
-        for rec in self:
-            if rec.patient_id:
-                rec.patient_id._on_related_changed()
-        return res
-
-    def unlink(self):
-        patients = self.mapped("patient_id")
-        res = super().unlink()
-        patients._on_related_changed()
-        return res
